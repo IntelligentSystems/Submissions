@@ -8,9 +8,7 @@ if ($_POST['performCheck'] && validUpload()) {
 	
 } elseif ($_POST['performSubmission'] && validFormFields()) {
 	$errors = validateFile($_FILES['file']['tmp_name']);
-	if (count($errors) === 0) {
-		copyFile($_FILES['file']['tmp_name']);
-	}
+	$drawSubmissionDonePage($errors);
 } else {
 	drawRegularPage();
 }
@@ -29,35 +27,98 @@ function validateFile($filename) {
 	if (strpos($fileContent, "public class") === false) {
 		$errors[] = "Uploaded java file has no valid class description";
 	} 
+	//ok, so it's a java file. Now copy it to the upload dir
+	$newFilename = copyFile($filename);
 	
 	//check whether code actually compiles
-	if (count($errors) === 0 && testCompilation($filename) == false) {
-		
+	if (count($errors) === 0) {
+		$errors = array_merge($errors, testCompilation($newFilename));
 	}
 	
-	//run code against example bot
+	//check whether code runs in playgame
+	if (count($errors === 0)) {
+		$errors = array_merge($errors, testPlayGame($newFilename));
+	}
 	
-	var_export($result);
-	return $result;
-	
+	return $errors;
 }
 
-function testCompilation($filename) {
-	$newFilename = copyFile($filename);
-	echo "compilation: "."javac ".$newFilename;
-	$result = shell_exec("javac ".$newFilename ." 2>&1"); 
+/**
+ * Run it shortly. Plays against itself, for just 2 turns
+ * 
+ * @param String $filename Java file name to execute
+ * @return errors, array of errors. Empty if everything is fine
+ */
+function testPlayGame($filename) {
+	global $config;
+	$errors = array();
+	$engineDir = $config['paths']['pwEngineDir'];
+	
+	//copy engine stuff to this uploaded directory
+	shell_exec("cp ".$engineDir."PlayGame.jar ".$engineDir."map.txt " .dirname($filename));
+	
+	//backup current dir, so we can reset (chdir again) to original directory afterwards
+	$workingDir = getcwd();
+	chdir(dirname($filename));
+	$cmd = "java -jar PlayGame.jar map.txt 100 2 tmp \"java RandomBot\" \"java RandomBot\" 2>&1";
+	
+	$result = shell_exec($cmd);
+	if (strpos($result, "Wins") === false) {
+		//Every game should have a winner. 
+		//The output doesnt contain the string indicating this, so something must have gone wrong
+		$errors[] = "Unable to run the bot. Output of PlayGame.jar: " . $result;
+	}
+	//reset to original working directory
+	chdir($workingDir);
+	
+	return $errors;
+}
+
+/**
+ *  Try compiling the java file
+ *  
+ * @param String $filename
+ * @return array Errors found when compiling. Empty if everything is fine
+ */
+function testCompilation($newFilename) {
+	$errors = array();
+	global $config;
+	
+	//move compiled api to location of submitted file. otherwise file wont compile
+	shell_exec("cp ".$config['paths']['pwBotDir']."*.class ".dirname($newFilename));
+	
+	//Change dir to dir of java file. 
+	//This way compilation sees other api classes, and file is saved in proper location
+	//backup current dir, so we can reset (chdir again) to original directory afterwards
+	$workingDir = getcwd();
+	chdir(dirname($newFilename));
+	$result = shell_exec("javac ".basename($newFilename) ." 2>&1");
 	//use last part to get error channel
 	//than it return the actual string error msg, instead of null
-	var_export($result);
+	
+	//check whether class name is indeed created
+	if (!count(glob(basename($newFilename, ".java").".class"))) {
+		$errors[] = "Failed to compile. Compile result: ". $result."\n";exit;
+	}
+	
+	//reset to original working directory
+	chdir($workingDir);
+	return $errors;
 }
 
+/**
+ * Copy uploaded file (in tmp dir) to upload folder
+ * 
+ * @param String $fromFilename From file
+ * @return string Location of new file (based on form fields such as 'week' and 'group'
+ */
 function copyFile($fromFilename) {
 	global $config;
-	$newFilename = $config['paths']['uploadDir']. $_POST['week']."/";
+	$newFilename = $config['paths']['uploadDir']. $_POST['week']."/".$_POST['group']."/";
 	if (!file_exists($newFilename)) {
 		mkdir($newFilename,0777, true);
 	}
-	$newFilename = $newFilename."/".$_POST['group'].".java";
+	$newFilename = $newFilename."/".$_FILES['file']['name'];
 	
 	copy($fromFilename, $newFilename);
 	return $newFilename;
@@ -92,6 +153,12 @@ function validFormFields() {
  * Draw regular page containing all forms
  */
 function drawRegularPage() {
+	global $config;
+	$main = getSmarty();
+	$main->display("main.tpl");
+}
+
+function drawSubmissionDonePage() {
 	global $config;
 	$main = getSmarty();
 	$main->display("main.tpl");
