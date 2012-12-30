@@ -45,7 +45,9 @@ function validateFile($filename) {
 function testCompilation($filename) {
 	$newFilename = copyFile($filename);
 	echo "compilation: "."javac ".$newFilename;
-	$result = shell_exec("javac ".$newFilename);
+	$result = shell_exec("javac ".$newFilename ." 2>&1"); 
+	//use last part to get error channel
+	//than it return the actual string error msg, instead of null
 	var_export($result);
 }
 
