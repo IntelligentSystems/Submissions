@@ -9,6 +9,9 @@ if ($_POST['performSanityCheck'] && count($_FILES['sanityCheckFile']['name']) > 
 	drawSanityCheckResult($errors);
 } elseif ($_POST['performSubmission'] && validFormFields()) {
 	$errors = validateFile($_FILES['submissionFile']['tmp_name'], true);
+	if (count($errors) === 0) {
+		copyFile($_FILES['submissionFile']['tmp_name'], getDropboxDir(), $_FILES['submissionFile']['name']);
+	}
 	drawSubmissionDonePage($errors);
 } else {
 	drawRegularPage();
@@ -29,7 +32,7 @@ function validateFile($filename, $submission) {
 		$errors[] = "Uploaded java file has no valid class description";
 	}
 	//ok, so it's a java file. Now clean upload dir and copy file
-	$uploadDir = getUploadDir($submission);
+	$uploadDir = getTempDir($submission);
 	if (is_dir($uploadDir)) {
 		shell_exec("rm ".$uploadDir."*");
 	}
@@ -130,14 +133,27 @@ function copyFile($fromFilename, $toDir, $toFilename) {
 	return $newFilename;
 }
 
-function getUploadDir($submission) {
+/**
+ * Directory where we compile and test stuff. Content gets deleted when we're done.
+ * 
+ * @param boolean $submission Whether to create a directory for a assignment submission, or for a sanity check
+ * @return string
+ */
+function getTempDir($submission) {
 	global $config;
 	if ($submission) {
-		return $config['paths']['uploadDir']. $_POST['week']."/".$_POST['group']."/";
+		return $config['paths']['uploadDir']. "week".$_POST['week']."/group".$_POST['group']."/";
 	} else {
 		return $config['paths']['tmpDir'].uniqid();
 	}
 }
+
+
+function getDropboxDir() {
+	global $config;
+	return $config['paths']['dropboxDir']. "week".$_POST['week']."/group".$_POST['group']."/";
+}
+
 
 
 /**

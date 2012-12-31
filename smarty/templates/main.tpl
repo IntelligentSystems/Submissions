@@ -34,10 +34,9 @@
 			 <div class="controls">   
 			<select onChange="onWeekChange();" id="week" name="week">
 				<option value=""></option>
-				<option value="1">week1</option>
-				<option value="2">week2</option>
-				<option value="3">week3</option>
-				<option value="4">week4</option>
+				{for $week=1 to 4}
+					<option value="{$week}">{$week}</option>
+				{/for}
 			</select>
 			</div>
 		</div>
