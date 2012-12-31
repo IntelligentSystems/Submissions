@@ -10,39 +10,44 @@
 <div class="tabbable tabs-left">
   <ul class="nav nav-tabs">
     <li class=""><a href="#submission" data-toggle="tab">Submit your bot</a></li>
-    <li class=""><a href="#sanityCheck" data-toggle="tab">Sanity Check</a></li>
+    <li class=""><a href="#sanityCheck" data-toggle="tab">Sanity Check your bot!</a></li>
   </ul>
   <div class="tab-content">
     <div class="tab-pane" id="submission">
       
-	<form class="navbar-form pull-left well form-horizontal" onSubmit="return validateSubmissionInput();" action="index.php" method="post" enctype="multipart/form-data">
+	<form class="navbar-form well form-horizontal" onSubmit="return validateSubmissionInput();" action="index.php" method="post" enctype="multipart/form-data">
 		<fieldset>
 		
 		<!--<legend>When uploading a submission, an automatic check is performed as well</legend>-->
 		<input type="hidden" name="performSubmission" value="1" />
 		<div class="control-group">  
-            <label class="control-label" for="group">Group Name</label>  
-            <div class="controls">  
-              <input type="text" class="input-xlarge" id="group" name="group">  
-              <!--<p class="help-block">In addition to freeform text, any HTML5 text-based input appears like so.</p>-->  
-            </div>  
-          </div>
+            <label class="control-label" for="group">Group</label> 
+            <div class="controls">    
+            <select onChange="onGroupChange();" id="group" name="group">
+				<option value=""></option>
+				{for $group=1 to 30}
+					<option value="{$group}">{$group}</option>
+				{/for}
+			</select>
+			</div>
+         </div>
 		<div class="control-group">  
 			 <label class="control-label" for="week">Week</label> 
 			 <div class="controls">   
-			<select id="week" name="week">
+			<select onChange="onWeekChange();" id="week" name="week">
 				<option value=""></option>
 				<option value="1">week1</option>
 				<option value="2">week2</option>
 				<option value="3">week3</option>
+				<option value="4">week4</option>
 			</select>
 			</div>
 		</div>
 		<div class="control-group">  
 			 <label class="control-label" for="file">File</label> 
 			 <div class="controls">
-			 	<input type="file" name="file" id="file">
-			 	<p class="help-block">Only submit the .java file of your bot</p>
+			 	<input onChange="onFileChange();" type="file" name="file" id="file">
+			 	<span class="help-block">Only submit the .java file of your bot</span>
 			 </div>
 		</div>
 		<input class="btn btn-primary" type="submit" name="submit" value="Submit">
