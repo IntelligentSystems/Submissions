@@ -8,7 +8,7 @@ if ($_POST['performCheck'] && validUpload()) {
 	
 } elseif ($_POST['performSubmission'] && validFormFields()) {
 	$errors = validateFile($_FILES['file']['tmp_name']);
-	$drawSubmissionDonePage($errors);
+	drawSubmissionDonePage($errors);
 } else {
 	drawRegularPage();
 }
@@ -27,8 +27,12 @@ function validateFile($filename) {
 	if (strpos($fileContent, "public class") === false) {
 		$errors[] = "Uploaded java file has no valid class description";
 	} 
-	//ok, so it's a java file. Now copy it to the upload dir
-	$newFilename = copyFile($filename);
+	//ok, so it's a java file. Now clean upload dir and copy file
+	$uploadDir = getUploadDir();
+	if (is_dir($uploadDir)) {
+		shell_exec("rm ".$uploadDir."*");
+	}
+	$newFilename = copyFile($filename, $uploadDir);
 	
 	//check whether code actually compiles
 	if (count($errors) === 0) {
@@ -60,11 +64,12 @@ function testPlayGame($filename) {
 	//backup current dir, so we can reset (chdir again) to original directory afterwards
 	$workingDir = getcwd();
 	chdir(dirname($filename));
-	$cmd = "java -jar PlayGame.jar map.txt 100 2 tmp \"java RandomBot\" \"java RandomBot\" 2>&1";
+	$botName = basename($filename, ".java");
+	$cmd = "java -jar PlayGame.jar map.txt 100 2 tmp \"java ".$botName."\" \"java ".$botName."\" 2>&1";
 	
 	$result = shell_exec($cmd);
-	if (strpos($result, "Wins") === false) {
-		//Every game should have a winner. 
+	if (strpos($result, "Wins") === false && strpos($result, "Draw") === false) {
+		//Every game should have a winner or should be a draw. 
 		//The output doesnt contain the string indicating this, so something must have gone wrong
 		$errors[] = "Unable to run the bot. Output of PlayGame.jar: " . $result;
 	}
@@ -112,16 +117,19 @@ function testCompilation($newFilename) {
  * @param String $fromFilename From file
  * @return string Location of new file (based on form fields such as 'week' and 'group'
  */
-function copyFile($fromFilename) {
-	global $config;
-	$newFilename = $config['paths']['uploadDir']. $_POST['week']."/".$_POST['group']."/";
-	if (!file_exists($newFilename)) {
-		mkdir($newFilename,0777, true);
+function copyFile($fromFilename, $toDir) {
+	if (!file_exists($toDir)) {
+		mkdir($toDir,0777, true);
 	}
-	$newFilename = $newFilename."/".$_FILES['file']['name'];
+	$newFilename = $toDir."/".$_FILES['file']['name'];
 	
 	copy($fromFilename, $newFilename);
 	return $newFilename;
+}
+
+function getUploadDir() {
+	global $config;
+	return $config['paths']['uploadDir']. $_POST['week']."/".$_POST['group']."/";
 }
 
 /**
@@ -158,10 +166,13 @@ function drawRegularPage() {
 	$main->display("main.tpl");
 }
 
-function drawSubmissionDonePage() {
+function drawSubmissionDonePage($errors) {
 	global $config;
 	$main = getSmarty();
+	$main->assign("submission", true);
+	$main->assign("errors", $errors);
 	$main->display("main.tpl");
+	
 }
 function getSmarty() {
 	global $config;

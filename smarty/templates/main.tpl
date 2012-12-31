@@ -7,23 +7,75 @@
 </head>
 <body>
 
-	When uploading a submission, an automatic check is performed as well
-	<form onSubmit="return validateSubmissionInput();" action="index.php" method="post" enctype="multipart/form-data">
-		<input type="hidden" name="performSubmission" value="1" />
-		<label>Group Name<input type="text" id="group" name="group" value="" size="30"></label>
-		<label>Week<select id="week" name="week">
-		<option value=""></option>
-		<option value="1">week1</option>
-		<option value="2">week2</option>
-		<option value="3">week3</option>
-		</select>
-		</label>
-		<label>
-		<label>Filename: <input type="file" name="file" id="file">
-		</label><br> 
+<div class="tabbable tabs-left">
+  <ul class="nav nav-tabs">
+    <li class=""><a href="#submission" data-toggle="tab">Submit your bot</a></li>
+    <li class=""><a href="#sanityCheck" data-toggle="tab">Sanity Check</a></li>
+  </ul>
+  <div class="tab-content">
+    <div class="tab-pane" id="submission">
+      
+	<form class="navbar-form pull-left well form-horizontal" onSubmit="return validateSubmissionInput();" action="index.php" method="post" enctype="multipart/form-data">
+		<fieldset>
 		
-		<input type="submit" name="submit" value="Submit">
+		<!--<legend>When uploading a submission, an automatic check is performed as well</legend>-->
+		<input type="hidden" name="performSubmission" value="1" />
+		<div class="control-group">  
+            <label class="control-label" for="group">Group Name</label>  
+            <div class="controls">  
+              <input type="text" class="input-xlarge" id="group" name="group">  
+              <!--<p class="help-block">In addition to freeform text, any HTML5 text-based input appears like so.</p>-->  
+            </div>  
+          </div>
+		<div class="control-group">  
+			 <label class="control-label" for="week">Week</label> 
+			 <div class="controls">   
+			<select id="week" name="week">
+				<option value=""></option>
+				<option value="1">week1</option>
+				<option value="2">week2</option>
+				<option value="3">week3</option>
+			</select>
+			</div>
+		</div>
+		<div class="control-group">  
+			 <label class="control-label" for="file">File</label> 
+			 <div class="controls">
+			 	<input type="file" name="file" id="file">
+			 	<p class="help-block">Only submit the .java file of your bot</p>
+			 </div>
+		</div>
+		<input class="btn btn-primary" type="submit" name="submit" value="Submit">
+		</fieldset>
 	</form>
+    </div>
+    <div class="tab-pane" id="sanityCheck">
+      <p>Howdy, I'm in Section B.</p>
+    </div>
+    
+    
+  </div>
+</div>
+	{if $submission}
+		{if $errors|@count == 0}
+			<div class="alert alert-success">
+				<p>Sucessfully uploaded your bot. Use the regular submission form to resubmit a newer version of the bot before the deadline.</p>
+			</div>
+		{else}
+			<div class="alert alert-error">
+			<p>Failed to submit your bot. The error(s) we encountered:</p>
+			<ul>
+				{foreach from=$errors item=error}
+					<li>{$error}</li>
+				{/foreach}
+			</ul>
+		
+		</div>
+		{/if}
+	{/if}
+            
+            
+	
 
 
 	<script src="http://code.jquery.com/jquery-latest.js"></script>
