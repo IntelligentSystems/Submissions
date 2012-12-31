@@ -4,10 +4,11 @@ ini_set('display_errors',1);
 // error_reporting(E_ALL);
 error_reporting(E_ALL ^ E_NOTICE);
 $config = parse_ini_file(__DIR__."/config.ini", true);
-if ($_POST['performCheck'] && validUpload()) {
-	
+if ($_POST['performSanityCheck'] && count($_FILES['sanityCheckFile']['name']) > 0) {
+	$errors = validateFile($_FILES['sanityCheckFile']['tmp_name'], false);
+	drawSanityCheckResult($errors);
 } elseif ($_POST['performSubmission'] && validFormFields()) {
-	$errors = validateFile($_FILES['file']['tmp_name']);
+	$errors = validateFile($_FILES['submissionFile']['tmp_name'], true);
 	drawSubmissionDonePage($errors);
 } else {
 	drawRegularPage();
@@ -19,20 +20,22 @@ if ($_POST['performCheck'] && validUpload()) {
  * Checks whether we can compile the file, and whether it runs in PlanetWars
  * @param unknown $filename
  */
-function validateFile($filename) {
+function validateFile($filename, $submission) {
 	$errors = array();
 	
 	//check whether it is a java class (veeeery naively)
 	$fileContent = file_get_contents($filename);
 	if (strpos($fileContent, "public class") === false) {
 		$errors[] = "Uploaded java file has no valid class description";
-	} 
+	}
 	//ok, so it's a java file. Now clean upload dir and copy file
-	$uploadDir = getUploadDir();
+	$uploadDir = getUploadDir($submission);
 	if (is_dir($uploadDir)) {
 		shell_exec("rm ".$uploadDir."*");
 	}
-	$newFilename = copyFile($filename, $uploadDir);
+	
+	$toFilename = ($submission? $_FILES['submissionFile']['name']: $_FILES['sanityCheckFile']['name']);
+	$newFilename = copyFile($filename, $uploadDir, $toFilename);
 	
 	//check whether code actually compiles
 	if (count($errors) === 0) {
@@ -117,32 +120,25 @@ function testCompilation($newFilename) {
  * @param String $fromFilename From file
  * @return string Location of new file (based on form fields such as 'week' and 'group'
  */
-function copyFile($fromFilename, $toDir) {
+function copyFile($fromFilename, $toDir, $toFilename) {
 	if (!file_exists($toDir)) {
 		mkdir($toDir,0777, true);
 	}
-	$newFilename = $toDir."/".$_FILES['file']['name'];
+	$newFilename = $toDir."/".$toFilename;
 	
 	copy($fromFilename, $newFilename);
 	return $newFilename;
 }
 
-function getUploadDir() {
+function getUploadDir($submission) {
 	global $config;
-	return $config['paths']['uploadDir']. $_POST['week']."/".$_POST['group']."/";
-}
-
-/**
- * Checks file name whether it is a java file (just checks extension)
- * @return boolean
- */
-function validUpload() {
-	if (count($_FILES['file']['name']) > 0) {//ends with java
-		return true;
+	if ($submission) {
+		return $config['paths']['uploadDir']. $_POST['week']."/".$_POST['group']."/";
 	} else {
-		return false;
+		return $config['paths']['tmpDir'].uniqid();
 	}
 }
+
 
 /**
  * Checks whether all form fields are filled in
@@ -150,7 +146,7 @@ function validUpload() {
  * @return boolean
  */
 function validFormFields() {
-	if (validUpload() && (int)$_POST['week'] > 0 && count($_POST['group']) > 0) {
+	if (count($_FILES['submissionFile']['name']) > 0 && (int)$_POST['week'] > 0 && count($_POST['group']) > 0) {
 		return true;
 	} else {
 		return false;
@@ -170,6 +166,13 @@ function drawSubmissionDonePage($errors) {
 	global $config;
 	$main = getSmarty();
 	$main->assign("submission", true);
+	$main->assign("errors", $errors);
+	$main->display("main.tpl");
+}
+function drawSanityCheckResult($errors) {
+	global $config;
+	$main = getSmarty();
+	$main->assign("sanityCheck", true);
 	$main->assign("errors", $errors);
 	$main->display("main.tpl");
 	

@@ -17,8 +17,6 @@
       
 	<form class="navbar-form well form-horizontal" onSubmit="return validateSubmissionInput();" action="index.php" method="post" enctype="multipart/form-data">
 		<fieldset>
-		
-		<!--<legend>When uploading a submission, an automatic check is performed as well</legend>-->
 		<input type="hidden" name="performSubmission" value="1" />
 		<div class="control-group">  
             <label class="control-label" for="group">Group</label> 
@@ -46,7 +44,7 @@
 		<div class="control-group">  
 			 <label class="control-label" for="file">File</label> 
 			 <div class="controls">
-			 	<input onChange="onFileChange();" type="file" name="file" id="file">
+			 	<input onChange='onFileChange("submissionFile");' type="file" name="submissionFile" id="submissionFile">
 			 	<span class="help-block">Only submit the .java file of your bot</span>
 			 </div>
 		</div>
@@ -55,7 +53,19 @@
 	</form>
     </div>
     <div class="tab-pane" id="sanityCheck">
-      <p>Howdy, I'm in Section B.</p>
+      <form class="navbar-form well form-horizontal" onSubmit="return validateSanityCheckInput();" action="index.php" method="post" enctype="multipart/form-data">
+		<fieldset>
+		<input type="hidden" name="performSanityCheck" value="1" />
+		<div class="control-group">  
+			 <label class="control-label" for="file">File</label> 
+			 <div class="controls">
+			 	<input onChange='onFileChange("sanityCheckFile");' type="file" name="sanityCheckFile" id="sanityCheckFile">
+			 	<span class="help-block">Only submit the .java file of your bot</span>
+			 </div>
+		</div>
+		<input class="btn btn-primary" type="submit" name="submit" value="Submit">
+		</fieldset>
+	</form>
     </div>
     
     
@@ -69,6 +79,23 @@
 		{else}
 			<div class="alert alert-error">
 			<p>Failed to submit your bot. The error(s) we encountered:</p>
+			<ul>
+				{foreach from=$errors item=error}
+					<li>{$error}</li>
+				{/foreach}
+			</ul>
+		
+		</div>
+		{/if}
+	{/if}
+	{if $sanityCheck}
+		{if $errors|@count == 0}
+			<div class="alert alert-success">
+				<p>Congrats! We were able to run your bot.</p>
+			</div>
+		{else}
+			<div class="alert alert-error">
+			<p>Failed to run your bot. The error(s) we encountered:</p>
 			<ul>
 				{foreach from=$errors item=error}
 					<li>{$error}</li>

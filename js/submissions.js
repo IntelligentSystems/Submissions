@@ -19,25 +19,33 @@ function validateSubmissionInput() {
 		}
 	}
 	//uploaded file needs to have .java extension
-	if (!validFilename()) {
+	if (!validFilename("submissionFile")) {
 		valid = false;
-		addFilenameError();
+		addFilenameError("submissionFile");
 	}
 	return valid;
 }
 
-function addFilenameError() {
-	var div = $("#file").parents("div.control-group");
-	div.addClass("error");
-	console.log($("#file").siblings().size());
-	if($("#file").siblings().size() == 1) {
-		$("#file").after('<span class="label label-important" style="margin-left: 8px;">Only upload a .java file</span>');
+function validateSanityCheckInput() {
+	//uploaded file needs to have .java extension
+	if (!validFilename()) {
+		valid = false;
+		addFilenameError();
 	}
 }
 
-function validFilename() {
+function addFilenameError(id) {
+	var div = $("#" + id).parents("div.control-group");
+	div.addClass("error");
+	console.log($("#" + id).siblings().size());
+	if($("#" + id).siblings().size() == 1) {
+		$("#" + id).after('<span class="label label-important" style="margin-left: 8px;">Only upload a .java file</span>');
+	}
+}
+
+function validFilename(id) {
 	var re = /(?:\.([^.]+))?$/;
-	var extension = re.exec($("#file").val())[1];
+	var extension = re.exec($("#" + id).val())[1];
 	if (extension != "java") {
 		return false;
 	} else {
@@ -63,14 +71,14 @@ function onWeekChange() {
 		}
 	}
 }
-function onFileChange() {
-	if (!validFilename()) {
-		addFilenameError();
-	} else if ($("#file").val() != undefined && $("#file").val().length > 0) {
-		var div = $("#file").parents("div.control-group");
+function onFileChange(id) {
+	if (!validFilename(id)) {
+		addFilenameError(id);
+	} else if ($("#" + id).val() != undefined && $("#" + id).val().length > 0) {
+		var div = $("#" + id).parents("div.control-group");
 		div.removeClass("error");
-		if($("#file").siblings().size() > 1) {
-			$("#file").next().remove();
+		if($("#" + id).siblings().size() > 1) {
+			$("#" + id).next().remove();
 		}
 	}
 }
