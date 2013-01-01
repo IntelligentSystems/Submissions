@@ -1,9 +1,16 @@
 <?php
-require('lib/Smarty-3.1.8/libs/Smarty.class.php');
+$privDir = "/home/lrd900/code/is_submissions/private/";
+if (!file_exists(getPath('lib/Smarty-3.1.8/libs/Smarty.class.php'))) {
+	echo "wanted to include file, but couldnt find it. Is the variable used in locating the private directory properly set??\n";
+	exit;
+}
+
+
+require(getPath('lib/Smarty-3.1.8/libs/Smarty.class.php'));
 ini_set('display_errors',1);
 // error_reporting(E_ALL);
 error_reporting(E_ALL ^ E_NOTICE);
-$config = parse_ini_file(__DIR__."/config.ini", true);
+$config = parse_ini_file(getPath("config.ini"), true);
 if ($_POST['performSanityCheck'] && count($_FILES['sanityCheckFile']['name']) > 0) {
 	$errors = validateFile($_FILES['sanityCheckFile']['tmp_name'], false);
 	drawSanityCheckResult($errors);
@@ -88,7 +95,7 @@ function validateFile($filename, $submission) {
 function testPlayGame($filename) {
 	global $config;
 	$errors = array();
-	$engineDir = $config['paths']['pwEngineDir'];
+	$engineDir = getPath($config['paths']['pwEngineDir']);
 	
 	//copy engine stuff to this uploaded directory
 	shell_exec("cp ".$engineDir."PlayGame.jar ".$engineDir."map.txt " .dirname($filename));
@@ -122,7 +129,7 @@ function testCompilation($newFilename) {
 	global $config;
 	
 	//move compiled api to location of submitted file. otherwise file wont compile
-	shell_exec("cp ".$config['paths']['pwBotDir']."*.class ".dirname($newFilename));
+	shell_exec("cp ".getPath($config['paths']['pwBotDir'])."*.class ".dirname($newFilename));
 	
 	//Change dir to dir of java file. 
 	//This way compilation sees other api classes, and file is saved in proper location
@@ -168,16 +175,16 @@ function copyFile($fromFilename, $toDir, $toFilename) {
 function getTempDir($submission) {
 	global $config;
 	if ($submission) {
-		return $config['paths']['uploadDir']. "week".$_POST['week']."/group".$_POST['group']."/";
+		return getPath($config['paths']['uploadDir']). "week".$_POST['week']."/group".$_POST['group']."/";
 	} else {
-		return $config['paths']['tmpDir'].uniqid();
+		return getPath($config['paths']['tmpDir']).uniqid();
 	}
 }
 
 
 function getDropboxDir() {
 	global $config;
-	return $config['paths']['dropboxDir']. "week".$_POST['week']."/group".$_POST['group']."/";
+	return getPath($config['paths']['dropboxDir']). "week".$_POST['week']."/group".$_POST['group']."/";
 }
 
 
@@ -222,9 +229,25 @@ function drawSanityCheckResult($errors) {
 function getSmarty() {
 	global $config;
 	$smarty = new Smarty();
-	$smarty->setTemplateDir($config['paths']['templateDir']);
-	$smarty->setCompileDir($config['paths']['templateCompileDir']);
-	$smarty->setCacheDir($config['paths']['smartyCacheDir']);
-	$smarty->setConfigDir($config['paths']['smartyConfigDir']);
+	$smarty->setTemplateDir(getPath($config['paths']['templateDir']));
+	$smarty->setCompileDir(getPath($config['paths']['templateCompileDir']));
+	$smarty->setCacheDir(getPath($config['paths']['smartyCacheDir']));
+	$smarty->setConfigDir(getPath($config['paths']['smartyConfigDir']));
 	return $smarty;
+}
+
+/**
+ * checks whether input is absolute or relative. 
+ * when it is relative, assume we are looking for something in the private dir, and prepend this dir location to make it absolute
+ * @param unknown $path
+ */
+function getPath($path) {
+	global $privDir;
+	if (substr($path, 0, 1) == "/") {
+		//absolute
+		return $path;
+	} else {
+		//relative: prepend location of private directory
+		return $privDir.$path;
+	}
 }
