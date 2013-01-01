@@ -69,20 +69,16 @@ function validateFile($filename, $submission) {
 	if (is_dir($uploadDir)) {
 		shell_exec("rm ".$uploadDir."*");
 	}
-	
 	$toFilename = ($submission? $_FILES['submissionFile']['name']: $_FILES['sanityCheckFile']['name']);
 	$newFilename = copyFile($filename, $uploadDir, $toFilename);
-	
 	//check whether code actually compiles
 	if (count($errors) === 0) {
 		$errors = array_merge($errors, testCompilation($newFilename));
 	}
-	
 	//check whether code runs in playgame
 	if (count($errors === 0)) {
 		$errors = array_merge($errors, testPlayGame($newFilename));
 	}
-	
 	return $errors;
 }
 
@@ -127,10 +123,8 @@ function testPlayGame($filename) {
 function testCompilation($newFilename) {
 	$errors = array();
 	global $config;
-	
 	//move compiled api to location of submitted file. otherwise file wont compile
 	shell_exec("cp ".getPath($config['paths']['pwBotDir'])."*.class ".dirname($newFilename));
-	
 	//Change dir to dir of java file. 
 	//This way compilation sees other api classes, and file is saved in proper location
 	//backup current dir, so we can reset (chdir again) to original directory afterwards
@@ -139,12 +133,11 @@ function testCompilation($newFilename) {
 	$result = shell_exec("javac ".basename($newFilename) ." 2>&1");
 	//use last part to get error channel
 	//than it return the actual string error msg, instead of null
-	
+
 	//check whether class name is indeed created
 	if (!count(glob(basename($newFilename, ".java").".class"))) {
-		$errors[] = "Failed to compile. Compile result: ". $result."\n";exit;
+		$errors[] = "Failed to compile. Compile result: ". $result."\n";
 	}
-	
 	//reset to original working directory
 	chdir($workingDir);
 	return $errors;
