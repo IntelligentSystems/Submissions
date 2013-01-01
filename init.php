@@ -27,3 +27,5 @@ if (count(glob($config['paths']['pwBotDir']."*.class"))) {
 	echo "Unable to compile bot api. Compilation output: ".$result."\n";
 }
 
+$now = new DateTime("now");
+echo "current server time is: ".$now->format('Y-m-d H:i:s').". Check whether this is correct! (important for submisions deadlines)\n";

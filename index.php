@@ -8,7 +8,8 @@ if ($_POST['performSanityCheck'] && count($_FILES['sanityCheckFile']['name']) > 
 	$errors = validateFile($_FILES['sanityCheckFile']['tmp_name'], false);
 	drawSanityCheckResult($errors);
 } elseif ($_POST['performSubmission'] && validFormFields()) {
-	$errors = validateFile($_FILES['submissionFile']['tmp_name'], true);
+	$errors = checkWeek();
+	$errors = array_merge($errors, validateFile($_FILES['submissionFile']['tmp_name'], true));
 	if (count($errors) === 0) {
 		copyFile($_FILES['submissionFile']['tmp_name'], getDropboxDir(), $_FILES['submissionFile']['name']);
 	}
@@ -17,6 +18,31 @@ if ($_POST['performSanityCheck'] && count($_FILES['sanityCheckFile']['name']) > 
 	drawRegularPage();
 }
 
+/**
+ * Checks whether is submission is in time for the deadline
+ * 
+ * @return array of errors containing error messages
+ */
+function checkWeek() {
+	global $config;
+	$dateFormat = 'Y-m-d H:i:s';
+	$errors = array();
+	$deadline = $config['deadlines']['week'.$_POST['week']];
+	if (!strlen($deadline)) {
+		$errors[] = "No deadline set in system for week ".$_POST['week'].". Notify course supervisors";
+	} else {
+		$deadlineDate = DateTime::createFromFormat($dateFormat, $deadline);
+		if ($deadlineDate === false) {
+			$errors[] = "Unable to parse deadline for week ".$_POST['week'].". Notify course supervisors";
+		} else {
+			$now =  new DateTime("now");
+			if ($deadlineDate < $now) {
+				$errors[] = "The deadline has passed for week ".$_POST['week'].". Unable to submit your bot. Current time: ".$now->format($dateFormat).". Deadline: ".$deadlineDate->format($dateFormat);
+			}
+		}
+	}
+	return $errors;
+}
 
 /**
  * performs all required checks to validate file. 
