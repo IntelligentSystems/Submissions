@@ -9,6 +9,7 @@ function validateSubmissionInput() {
 			$("#group").after('<span class="label label-important" style="margin-left: 8px;">Please specify your group</span>');
 		}
 	}
+	/*
 	//week needs to have value
 	if ($("#week").val() == undefined || $("#week").val() < 1 || $("#week").val() > 4) {
 		valid = false;
@@ -17,7 +18,7 @@ function validateSubmissionInput() {
 		if($("#week").siblings().size() == 0) {
 			$("#week").after('<span class="label label-important" style="margin-left: 8px;">Please provide for which week you wish to upload your submission</span>');
 		}
-	}
+	}*/
 	//uploaded file needs to have .java extension
 	if (!validFilename("submissionFile")) {
 		valid = false;

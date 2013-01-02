@@ -18,7 +18,7 @@ if ($_POST['performSanityCheck'] && count($_FILES['sanityCheckFile']['name']) > 
 	//always save a copy to our backup folder just in case
 	copyFile($_FILES['submissionFile']['tmp_name'], getBackupDir(), date("Y-m-d_H:i:s")."_".$_FILES['submissionFile']['name']);
 	
-	$errors = checkWeek();
+	$errors = checkDeadline();
 	$errors = array_merge($errors, validateFile($_FILES['submissionFile']['tmp_name'], true));
 	if (count($errors) === 0) {
 		copyFile($_FILES['submissionFile']['tmp_name'], getDropboxDir(), $_FILES['submissionFile']['name']);
@@ -33,21 +33,21 @@ if ($_POST['performSanityCheck'] && count($_FILES['sanityCheckFile']['name']) > 
  * 
  * @return array of errors containing error messages
  */
-function checkWeek() {
+function checkDeadline() {
 	global $config;
 	$dateFormat = 'Y-m-d H:i:s';
 	$errors = array();
-	$deadline = $config['deadlines']['week'.$_POST['week']];
+	$deadline = $config['deadlines']['deadline'];
 	if (!strlen($deadline)) {
-		$errors[] = "No deadline set in system for week ".$_POST['week'].". Notify course supervisors";
+		$errors[] = "No deadline set in system. Notify course supervisors";
 	} else {
 		$deadlineDate = DateTime::createFromFormat($dateFormat, $deadline);
 		if ($deadlineDate === false) {
-			$errors[] = "Unable to parse deadline for week ".$_POST['week'].". Notify course supervisors";
+			$errors[] = "Unable to parse deadline. Notify course supervisors";
 		} else {
 			$now =  new DateTime("now");
 			if ($deadlineDate < $now) {
-				$errors[] = "The deadline has passed for week ".$_POST['week'].". Unable to submit your bot. Current time: ".$now->format($dateFormat).". Deadline: ".$deadlineDate->format($dateFormat);
+				$errors[] = "The deadline has passed. Unable to submit your bot. Current time: ".$now->format($dateFormat).". Deadline: ".$deadlineDate->format($dateFormat);
 			}
 		}
 	}
@@ -171,7 +171,7 @@ function copyFile($fromFilename, $toDir, $toFilename) {
 function getTempDir($submission) {
 	global $config;
 	if ($submission) {
-		return getPath($config['paths']['uploadDir']). "week".$_POST['week']."/group".$_POST['group']."/";
+		return getPath($config['paths']['uploadDir'])."group".$_POST['group']."/";
 	} else {
 		return getPath($config['paths']['tmpDir']).uniqid();
 	}
@@ -180,12 +180,12 @@ function getTempDir($submission) {
 
 function getDropboxDir() {
 	global $config;
-	return getPath($config['paths']['dropboxDir']). "week".$_POST['week']."/group".$_POST['group']."/";
+	return getPath($config['paths']['dropboxDir']). "group".$_POST['group']."/";
 }
 
 function getBackupDir() {
 	global $config;
-	return getPath($config['paths']['backupDir']). "week".$_POST['week']."/group".$_POST['group']."/";
+	return getPath($config['paths']['backupDir'])."group".$_POST['group']."/";
 }
 
 
@@ -195,7 +195,7 @@ function getBackupDir() {
  * @return boolean
  */
 function validFormFields() {
-	if (count($_FILES['submissionFile']['name']) > 0 && (int)$_POST['week'] > 0 && count($_POST['group']) > 0) {
+	if (count($_FILES['submissionFile']['name']) > 0 /*&& (int)$_POST['week'] > 0*/ && count($_POST['group']) > 0) {
 		return true;
 	} else {
 		return false;

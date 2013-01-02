@@ -9,7 +9,7 @@
 
 <div class="tabbable tabs-left">
   <ul class="nav nav-tabs">
-    <li class=""><a href="#submission" data-toggle="tab">Submit your bot</a></li>
+    <!--<li class=""><a href="#submission" data-toggle="tab">Submit your bot</a></li>-->
     <li class=""><a href="#sanityCheck" data-toggle="tab">Sanity Check your bot!</a></li>
   </ul>
   <div class="tab-content">
@@ -29,7 +29,7 @@
 			</select>
 			</div>
          </div>
-		<div class="control-group">  
+		<!--<div class="control-group">  
 			 <label class="control-label" for="week">Week</label> 
 			 <div class="controls">   
 			<select onChange="onWeekChange();" id="week" name="week">
@@ -39,7 +39,7 @@
 				{/for}
 			</select>
 			</div>
-		</div>
+		</div>-->
 		<div class="control-group">  
 			 <label class="control-label" for="file">File</label> 
 			 <div class="controls">
@@ -52,6 +52,10 @@
 	</form>
     </div>
     <div class="tab-pane" id="sanityCheck">
+    <p >Perform this sanity check to make sure your bot runs in our environment</p>
+    <p><small>Running a bot locally on your computer does not ensure that the bot runs on other computers (e.g. the computer where we run the final competition on). 
+    Reasons are: <ul><li>The use of external libraries or java7 functionality, which are missing on other computers</li>
+    <li>The use of (relative or absolute) paths pointing to files which are only on your own computer, and not on others</li></ul> 
       <form class="navbar-form well form-horizontal" onSubmit="return validateSanityCheckInput();" action="index.php" method="post" enctype="multipart/form-data">
 		<fieldset>
 		<input type="hidden" name="performSanityCheck" value="1" />
