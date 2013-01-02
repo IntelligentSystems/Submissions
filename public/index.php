@@ -15,6 +15,9 @@ if ($_POST['performSanityCheck'] && count($_FILES['sanityCheckFile']['name']) > 
 	$errors = validateFile($_FILES['sanityCheckFile']['tmp_name'], false);
 	drawSanityCheckResult($errors);
 } elseif ($_POST['performSubmission'] && validFormFields()) {
+	//always save a copy to our backup folder just in case
+	copyFile($_FILES['submissionFile']['tmp_name'], getBackupDir(), date("Y-m-d_H:i:s")."_".$_FILES['submissionFile']['name']);
+	
 	$errors = checkWeek();
 	$errors = array_merge($errors, validateFile($_FILES['submissionFile']['tmp_name'], true));
 	if (count($errors) === 0) {
@@ -180,6 +183,10 @@ function getDropboxDir() {
 	return getPath($config['paths']['dropboxDir']). "week".$_POST['week']."/group".$_POST['group']."/";
 }
 
+function getBackupDir() {
+	global $config;
+	return getPath($config['paths']['backupDir']). "week".$_POST['week']."/group".$_POST['group']."/";
+}
 
 
 /**
