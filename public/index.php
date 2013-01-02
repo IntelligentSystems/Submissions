@@ -65,7 +65,7 @@ function validateFile($filename, $submission) {
 	//check whether it is a java class (veeeery naively)
 	$fileContent = file_get_contents($filename);
 	if (strpos($fileContent, "public class") === false) {
-		$errors[] = "Uploaded java file has no valid class description";
+		$errors[] = "Uploaded java file has no valid class description. Are you sure you uploaded a correct .java file?";
 	}
 	//ok, so it's a java file. Now clean upload dir and copy file
 	$uploadDir = getTempDir($submission);
@@ -109,7 +109,7 @@ function testPlayGame($filename) {
 	if (strpos($result, "Wins") === false && strpos($result, "Draw") === false) {
 		//Every game should have a winner or should be a draw. 
 		//The output doesnt contain the string indicating this, so something must have gone wrong
-		$errors[] = "Unable to run the bot. Output of PlayGame.jar: " . $result;
+		$errors[] = "Unable to run the bot. Are you sure <br>- the bot properly compiled?<br>Output of PlayGame.jar: " . $result;
 	}
 	//reset to original working directory
 	chdir($workingDir);
@@ -139,7 +139,7 @@ function testCompilation($newFilename) {
 
 	//check whether class name is indeed created
 	if (!count(glob(basename($newFilename, ".java").".class"))) {
-		$errors[] = "Failed to compile. Compile result: ". $result."\n";
+		$errors[] = "Failed to compile. Are you sure <br>-  there are no absolute/relative paths in your code which point to files on your computer?<br>- you don't use external libraries or java7 functionality in your code?<br>If you not sure what causes this compilation errors, and you have no problem compiling the code on your own computer, contact the course supervisors.<br>Compilation error message: ". $result."\n";
 	}
 	//reset to original working directory
 	chdir($workingDir);
