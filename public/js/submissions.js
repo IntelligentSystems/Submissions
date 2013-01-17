@@ -38,16 +38,42 @@ function validateSubmissionInput() {
 }
 
 function validateSanityCheckInput() {
-	//TODOOOOOOOOOOOOOOOOOOOOOOO
-	
-	
-	
-	//uploaded file needs to have .java extension
-	validationResult = validFilename();
-	if (validationResult != -1) {
+	valid = true;
+	fileForBotFound = false;
+	//we need to define the bot name. check it!
+	if ($("#SCBotName").val() == undefined || $("#SCBotName").val().length == 0) {
 		valid = false;
-		addFilenameError(element, validationResult);
+		var div = $("#SCBotName").parents("div.control-group");
+		div.addClass("error");
+		if ($("#SCBotName").siblings().size() == 0) {
+			$("#SCBotName")
+					.after(
+							'<span class="label label-important" style="margin-left: 8px;">You need to specify your bot name, otherwise we can\'t run it!</span>');
+		}
 	}
+	
+	//check all submitted files
+	$("input:file[name='sanityCheckFile[]']").each(function(){
+		if (valid && ($("#SCBotName").val() == getFilename($(this).val()) || $("#SCBotName").val() + ".java" == getFilename($(this).val()))) {
+			fileForBotFound = true;
+		}
+		validationResult = validFilename($(this));
+		if (validationResult != -1) {
+			valid = false;
+			addFilenameError($(this), validationResult);
+		}
+	});
+	if (!fileForBotFound) {
+		valid = false;
+		var div = $("#SCBotName").parents("div.control-group");
+		div.addClass("error");
+		if ($("#SCBotName").siblings().size() == 0) {
+			$("#SCBotName")
+					.after(
+							'<span class="label label-important" style="margin-left: 8px;">The name you specified does not correspond with any of the files you uploaded..</span>');
+		}
+	}
+	return valid;
 }
 
 function addFilenameError(element, message) {
@@ -64,18 +90,29 @@ function addFilenameError(element, message) {
 }
 
 function validFilename(element) {
-	var re = /(?:\.([^.]+))?$/;
-	var extension = re.exec(element.val())[1];
-	if (extension != "java") {
-		return "Only upload a .java file";
-	}
-	var filename = element.val().replace(/^.*[\\\/]/, '');
-	if (filename == "Planet.java" || filename == "PlanetWars.java") {
-		return "Do not submit the Planet.java or PlanetWars.java files";
+	if (element.val() != undefined && element.val().length > 0) {
+		if (getExtension(element.val()) != "java") {
+			return "Only upload a .java file";
+		}
+		var filename = getFilename(element.val());
+		if (filename == "Planet.java" || filename == "PlanetWars.java") {
+			return "Do not submit the Planet.java or PlanetWars.java files";
+		}
 	}
 	return -1;
 }
-
+function getExtension(filePath) {
+	var re = /(?:\.([^.]+))?$/;
+	return re.exec(filePath)[1];
+}
+function getFilename(filePath) {
+	return filePath.replace(/^.*[\\\/]/, '');
+}
+function getBasename(filePath) {
+	filename = getFilename(filePath);
+	var array =filename.split('.');
+	return array[0];
+}
 function onGroupChange() {
 	if ($("#group").val() != undefined && $("#group").val() > 0) {
 		var div = $("#group").parents("div.control-group");

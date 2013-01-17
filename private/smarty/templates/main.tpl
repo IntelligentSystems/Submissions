@@ -59,7 +59,7 @@
     <li>If your computer is stronger than the hardware we use for the competition server, the bot might take too long for each turn. In that case, try to make your bot more efficient</li>
     </ul> 
     
-      <form enctype="multipart/form-data" class="navbar-form well form-horizontal" onSubmit="return validateSanityCheckInput();" action="index.php" method="post" enctype="multipart/form-data">
+      <form enctype="multipart/form-data" class="navbar-form well form-horizontal" onsubmit="return validateSanityCheckInput();" action="index.php" method="post" enctype="multipart/form-data">
 		<fieldset>
 		<div class="control-group">
 			<div class="controls">
@@ -68,9 +68,14 @@
 				<input type="hidden" name="performSanityCheck" value="1" />
 			</div>
 		</div>
-		
+		<div class="control-group">
+			<label class="control-label" for="SCBotName">Bot Name (i.e. name of the main java file)</label>
+			
+			<div class="controls">
+				<input type="text" name="SCBotName" id="SCBotName">
+			</div>
+		</div>
 		<div class="control-group" id="SCControlGroup">  
-			 
 			 <label class="control-label" for="file">File</label> 
 			 <div class="controls">
 			 	<input onChange='onFileChange($(this));' type="file" name="sanityCheckFile[]" id="sanityCheckFile">
