@@ -52,21 +52,37 @@
 	</form>
     </div>
     <div class="tab-pane" id="sanityCheck">
-    <p >Perform this sanity check to make sure your bot runs in our environment</p>
-    <p><small>Running a bot locally on your computer does not ensure that the bot runs on other computers (e.g. the computer where we run the final competition on). 
-    Reasons are: <ul><li>The use of external libraries or java7 functionality, which are missing on other computers</li>
-    <li>The use of (relative or absolute) paths pointing to files which are only on your own computer, and not on others</li></ul> 
-      <form class="navbar-form well form-horizontal" onSubmit="return validateSanityCheckInput();" action="index.php" method="post" enctype="multipart/form-data">
+    <p >Perform this sanity check to make sure your bot runs on the final competition server.</p>
+    <p><small>Running a bot locally on your computer does not ensure the bot runs on the server on which we run the final competition. 
+    Possible reasons for errors are: <ul><li>The use of external libraries or java7 functionality in your bot code, which are missing on other computers</li>
+    <li>The use of (relative or absolute) paths pointing to files which are only on your own computer, and not on others</li>
+    <li>If your computer is stronger than the hardware we use for the competition server, the bot might take too long for each turn. In that case, try to make your bot more efficient</li>
+    </ul> 
+    
+      <form enctype="multipart/form-data" class="navbar-form well form-horizontal" onSubmit="return validateSanityCheckInput();" action="index.php" method="post" enctype="multipart/form-data">
 		<fieldset>
-		<input type="hidden" name="performSanityCheck" value="1" />
-		<div class="control-group">  
+		<div class="control-group">
+			<div class="controls">
+				<p>Only upload the .java file of your bot, and if applicable, other .java files. Do not submit the Planet.java and PlanetWars.java files. Did you make changes to these files? Then get these in a different java class, and upload again</p>
+				<a href="#" class="btn btn-success btn-mini" onclick="addSanityCheckInput();"><i class="icon-white icon-plus"></i> Add another file</a>
+				<input type="hidden" name="performSanityCheck" value="1" />
+			</div>
+		</div>
+		
+		<div class="control-group" id="SCControlGroup">  
+			 
 			 <label class="control-label" for="file">File</label> 
 			 <div class="controls">
-			 	<input onChange='onFileChange("sanityCheckFile");' type="file" name="sanityCheckFile" id="sanityCheckFile">
-			 	<span class="help-block">Only submit the .java file of your bot</span>
+			 	<input onChange='onFileChange($(this));' type="file" name="sanityCheckFile[]" id="sanityCheckFile">
+			 	<!--<span class="help-block">Only submit the .java file of your bot</span>-->
 			 </div>
 		</div>
-		<input class="btn btn-primary" type="submit" name="submit" value="Submit">
+		<div class="control-group" id="SCButtons">  
+			<div class="controls"> 
+				<input class="btn btn-primary" type="submit" name="submit" value="Submit">
+			</div>
+		</div>
+		
 		</fieldset>
 	</form>
     </div>
