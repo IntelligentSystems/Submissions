@@ -29,6 +29,13 @@
 			</select>
 			</div>
          </div>
+         <div class="control-group">
+			<label class="control-label" for="SBotName">Bot Name (i.e. name of the main java file)</label>
+			
+			<div class="controls">
+				<input type="text" name="SBotName" id="SBotName">
+			</div>
+		</div>
 		<!--<div class="control-group">  
 			 <label class="control-label" for="week">Week</label> 
 			 <div class="controls">   
