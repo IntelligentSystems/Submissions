@@ -33,7 +33,7 @@
 			<label class="control-label" for="SBotName">Bot Name (i.e. name of the main java file)</label>
 			
 			<div class="controls">
-				<input type="text" name="SBotName" id="SBotName">
+				<input type="text" onKeyUp="onBotNameChange($(this));" name="SBotName" id="SBotName">
 			</div>
 		</div>
 		<!--<div class="control-group">  
@@ -79,7 +79,7 @@
 			<label class="control-label" for="SCBotName">Bot Name (i.e. name of the main java file)</label>
 			
 			<div class="controls">
-				<input type="text" name="SCBotName" id="SCBotName">
+				<input type="text" onKeyUp="onBotNameChange($(this));" name="SCBotName" id="SCBotName">
 			</div>
 		</div>
 		<div class="control-group" id="SCControlGroup">  

@@ -69,18 +69,17 @@ function validateFiles($submission) {
 	if (is_dir($uploadDir)) {
 		shell_exec("rm ".$uploadDir."*");
 	}
-	
 	foreach ($_FILES['sanityCheckFile']['tmp_name'] AS $key => $filename) {
-		//check whether it is a java class (veeeery naively)
-		$fileContent = file_get_contents($filename);
-		if (strpos($fileContent, "public class") === false) {
-			$errors[] = "Uploaded java file ". $_FILE['sanityCheckFile'][$key]['name'] ." has no valid class description. Are you sure you uploaded a correct .java file?";
+		if (strlen($filename)) {
+			//check whether it is a java class (veeeery naively)
+			$fileContent = file_get_contents($filename);
+			if (strpos($fileContent, "public class") === false) {
+				$errors[] = "Uploaded java file ". $_FILE['sanityCheckFile'][$key]['name'] ." has no valid class description. Are you sure you uploaded a correct .java file?";
+			}
+	
+			$toFilename = ($submission? $_FILES['submissionFile']['name'][$key]: $_FILES['sanityCheckFile']['name'][$key]);
+			$newFilename = copyFile($filename, $uploadDir, $toFilename);
 		}
-
-		$toFilename = ($submission? $_FILES['submissionFile']['name'][$key]: $_FILES['sanityCheckFile']['name'][$key]);
-		$newFilename = copyFile($filename, $uploadDir, $toFilename);
-		//check whether code actually compiles
-		
 	}
 	if (count($errors) === 0) {
 		$errors = array_merge($errors, testCompilation($uploadDir));
@@ -111,13 +110,15 @@ function testPlayGame($dir) {
 	chdir($dir);
 	$botName = getBotName();
 	if (!strlen($botName)) $errors[] = "Unable to find a matching java file for your bot name";
-	$cmd = "java -jar PlayGame.jar map.txt \"java ".$botName."\" \"java ".$botName."\" parallel 10 1000 2>&1";
-	echo $cmd;
+	$cmd = "java -jar PlayGame.jar map.txt \"java ".$botName."\" \"java ".$botName."\" parallel ".$config['game']['numTurns']." ".$config['game']['maxTurnTime']." 2>&1";
 	$result = shell_exec($cmd);
 	if (strpos($result, "Wins") === false && strpos($result, "Draw") === false) {
 		//Every game should have a winner or should be a draw. 
 		//The output doesnt contain the string indicating this, so something must have gone wrong
 		$errors[] = "Unable to run the bot. Are you sure <br>- the bot properly compiled?<br>Output of PlayGame.jar: " . $result;
+	}
+	if (strpos($result, "you missed a turn!") !== false) {
+		$errors[] = "Your bot was too slow. The maximum time per turn is set to ".$config['game']['maxTurnTime']."ms. Try to make your bot more efficient.";
 	}
 	//reset to original working directory
 	chdir($workingDir);

@@ -51,9 +51,12 @@ function validateSanityCheckInput() {
 							'<span class="label label-important" style="margin-left: 8px;">You need to specify your bot name, otherwise we can\'t run it!</span>');
 		}
 	}
-	
+	anyFileSubmitted = false;
 	//check all submitted files
 	$("input:file[name='sanityCheckFile[]']").each(function(){
+		if ($(this).val() != null && $(this).val().length > 0) {
+			anyFileSubmitted = true;
+		}
 		if (valid && ($("#SCBotName").val() == getFilename($(this).val()) || $("#SCBotName").val() + ".java" == getFilename($(this).val()))) {
 			fileForBotFound = true;
 		}
@@ -63,7 +66,10 @@ function validateSanityCheckInput() {
 			addFilenameError($(this), validationResult);
 		}
 	});
-	if (!fileForBotFound) {
+	if (!anyFileSubmitted) {
+		addFilenameError($("#sanityCheckFile"), "You forgot to upload the java files");
+		valid = false;
+	} else if (!fileForBotFound) {
 		valid = false;
 		var div = $("#SCBotName").parents("div.control-group");
 		div.addClass("error");
@@ -140,6 +146,11 @@ function onFileChange(element) {
 		
 	}
 }
+function onBotNameChange(element) {
+	removeError(element);
+}
+
+
 function removeError(element) {
 	var div = element.parents("div.control-group");
 	div.removeClass("error");
