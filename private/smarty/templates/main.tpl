@@ -65,6 +65,7 @@
     <li>The use of (relative or absolute) paths pointing to files which are only on your own computer, and not on others</li>
     <li>If your computer is stronger than the hardware we use for the competition server, the bot might take too long for each turn. In that case, try to make your bot more efficient</li>
     </ul> 
+    Take a look at the blackboard 'final competition' page for a complete list of requirements
     
       <form enctype="multipart/form-data" class="navbar-form well form-horizontal" onsubmit="return validateSanityCheckInput();" action="index.php" method="post" enctype="multipart/form-data">
 		<fieldset>

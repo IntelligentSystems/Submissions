@@ -1,4 +1,5 @@
 <?php
+error_reporting(E_ERROR | E_WARNING);
 $privDir = "/home/lrd900/code/is_submissions/private/";
 if (!file_exists(getPath('lib/Smarty-3.1.8/libs/Smarty.class.php'))) {
 	echo "wanted to include file, but couldnt find it. Is the variable used in locating the private directory properly set??\n";
@@ -12,7 +13,6 @@ ini_set('display_errors',1);
 error_reporting(E_ALL ^ E_NOTICE);
 $config = parse_ini_file(getPath("config.ini"), true);
 if ($_POST['performSanityCheck'] && count($_FILES['sanityCheckFile']['name']) > 0) {
-// 	$errors = validateFiles($_FILES['sanityCheckFile']['tmp_name'], false);
 	$errors = validateFiles(false);
 	drawSanityCheckResult($errors);
 } elseif ($_POST['performSubmission'] && validFormFields()) {
@@ -71,6 +71,8 @@ function validateFiles($submission) {
 	}
 	foreach ($_FILES['sanityCheckFile']['tmp_name'] AS $key => $filename) {
 		if (strlen($filename)) {
+			//check valid filename (need to have numerical postfix!)
+			$errors = array_merge($errors, validateFilename($_FILES['sanityCheckFile']['name'][$key]));
 			//check whether it is a java class (veeeery naively)
 			$fileContent = file_get_contents($filename);
 			if (strpos($fileContent, "public class") === false) {
@@ -87,6 +89,19 @@ function validateFiles($submission) {
 	//check whether code runs in playgame
 	if (count($errors === 0)) {
 		$errors = array_merge($errors, testPlayGame($uploadDir));
+	}
+	return $errors;
+}
+
+function validateFilename($filename) {
+	$errors = array();
+	$filearray = explode('.', $filename);
+	$extension = end($filearray);
+	if ($extension !== "java") {
+		$errors[] = "Invalid file extension for file " . basename($filename) . ". Should be a .java file";
+	} else if (!preg_match("/^.*\d+/", basename($filename, ".java"))) {
+		$errors[] = "Add your group number to the end of your files, e.g. RandomBot14.java. Current filename: " . $filename;
+		
 	}
 	return $errors;
 }
@@ -110,12 +125,14 @@ function testPlayGame($dir) {
 	chdir($dir);
 	$botName = getBotName();
 	if (!strlen($botName)) $errors[] = "Unable to find a matching java file for your bot name";
-	$cmd = "java -jar PlayGame.jar map.txt \"java ".$botName."\" \"java ".$botName."\" parallel ".$config['game']['numTurns']." ".$config['game']['maxTurnTime']." 2>&1";
+	$cmd = "java -Xmx" . $config['game']['maxMemSanity'] ."m -jar PlayGame.jar map.txt";
+	$cmd .= " \"java ".$botName."\" \"java ".$botName."\"";
+	$cmd .= " parallel ".$config['game']['numTurns']." ".$config['game']['maxTurnTime']." 2>&1";
 	$result = shell_exec($cmd);
 	if (strpos($result, "Wins") === false && strpos($result, "Draw") === false) {
 		//Every game should have a winner or should be a draw. 
 		//The output doesnt contain the string indicating this, so something must have gone wrong
-		$errors[] = "Unable to run the bot. Are you sure <br>- the bot properly compiled?<br>Output of PlayGame.jar: " . $result;
+		$errors[] = "Unable to run the bot. Are you sure <br>- the bot properly compiled?<br>Output of PlayGame.jar: <div class=\"well\">" . $result."</div>";
 	}
 	if (strpos($result, "you missed a turn!") !== false) {
 		$errors[] = "Your bot was too slow. The maximum time per turn is set to ".$config['game']['maxTurnTime']."ms. Try to make your bot more efficient.";

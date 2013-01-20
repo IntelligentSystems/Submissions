@@ -4,8 +4,6 @@ function addSanityCheckInput() {
 	clone.removeAttr('id');
 	clone.find('#sanityCheckFile').val('');
 	$('#SCButtons').before(clone);
-//	clone.appendTo('.input_holder');
-//	SCControlGroup
 };
 
 $('.remove_field').click(function() {
@@ -52,6 +50,7 @@ function validateSanityCheckInput() {
 		}
 	}
 	anyFileSubmitted = false;
+	
 	//check all submitted files
 	$("input:file[name='sanityCheckFile[]']").each(function(){
 		if ($(this).val() != null && $(this).val().length > 0) {
@@ -82,6 +81,7 @@ function validateSanityCheckInput() {
 	return valid;
 }
 
+
 function addFilenameError(element, message) {
 	var div = element.parents("div.control-group");
 	div.addClass("error");
@@ -103,6 +103,13 @@ function validFilename(element) {
 		var filename = getFilename(element.val());
 		if (filename == "Planet.java" || filename == "PlanetWars.java") {
 			return "Do not submit the Planet.java or PlanetWars.java files";
+		}
+		
+		//check postfix
+		var basename = getBasename(filename);
+		console.log(basename.match(/^.*\d+/));
+		if (!basename.match(/^.*\d+/)) {
+			return "Append your group number to the file name, e.g. RandomBot14.java";
 		}
 	}
 	return -1;
