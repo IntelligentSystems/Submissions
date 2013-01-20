@@ -125,8 +125,8 @@ function testPlayGame($dir) {
 	chdir($dir);
 	$botName = getBotName();
 	if (!strlen($botName)) $errors[] = "Unable to find a matching java file for your bot name";
-	$cmd = "java -Xmx" . $config['game']['maxMemSanity'] ."m -jar PlayGame.jar map.txt";
-	$cmd .= " \"java ".$botName."\" \"java ".$botName."\"";
+	$cmd = "java -jar PlayGame.jar map.txt";
+	$cmd .= " \"java -Xmx" . $config['game']['maxMemSanity'] ."m ".$botName."\" \"java -Xmx" . $config['game']['maxMemSanity'] ."m ".$botName."\"";
 	$cmd .= " parallel ".$config['game']['numTurns']." ".$config['game']['maxTurnTime']." 2>&1";
 	$result = shell_exec($cmd);
 	if (strpos($result, "Wins") === false && strpos($result, "Draw") === false) {
