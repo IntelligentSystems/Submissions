@@ -73,12 +73,7 @@ function validateFiles($submission) {
 		if (strlen($filename)) {
 			//check valid filename (need to have numerical postfix!)
 			$errors = array_merge($errors, validateFilename($_FILES['sanityCheckFile']['name'][$key]));
-			//check whether it is a java class (veeeery naively)
-			$fileContent = file_get_contents($filename);
-			if (strpos($fileContent, "public class") === false) {
-				$errors[] = "Uploaded java file ". $_FILE['sanityCheckFile'][$key]['name'] ." has no valid class description. Are you sure you uploaded a correct .java file?";
-			}
-	
+			
 			$toFilename = ($submission? $_FILES['submissionFile']['name'][$key]: $_FILES['sanityCheckFile']['name'][$key]);
 			$newFilename = copyFile($filename, $uploadDir, $toFilename);
 		}
