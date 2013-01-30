@@ -17,18 +17,38 @@ if ($_POST['performSanityCheck'] && count($_FILES['sanityCheckFile']['name']) > 
 	drawSanityCheckResult($errors);
 } elseif ($_POST['performSubmission'] && validFormFields()) {
 	//always save a copy to our backup folder just in case
-	copyFile($_FILES['submissionFile']['tmp_name'], getBackupDir(), date("Y-m-d_H:i:s")."_".$_FILES['submissionFile']['name']);
+	backupFiles();
 	
 	$errors = checkDeadline();
-	$errors = array_merge($errors, validateFile($_FILES['submissionFile']['tmp_name'], true));
+	$errors = array_merge($errors, validateFiles(true));
 	if (count($errors) === 0) {
-		copyFile($_FILES['submissionFile']['tmp_name'], getDropboxDir(), $_FILES['submissionFile']['name']);
+		submitFiles();
 	}
+		
 	drawSubmissionDonePage($errors);
 } else {
 	drawRegularPage();
 }
-
+function backupFiles() {
+	$backupDir = getBackupDir();
+	$prefix = date("Y-m-d_H:i:s")."_";
+	foreach ($_FILES['submissionFile']['tmp_name'] as $key => $tmpName) {
+		if (strlen($tmpName)) {
+			copyFile($tmpName, $backupDir, $prefix.$_FILES['submissionFile']['name'][$key]);
+		}
+	}
+}
+function submitFiles() {
+	$dropboxDir = getDropboxDir();
+	foreach ($_FILES['submissionFile']['tmp_name'] as $key => $tmpName) {
+		if (strlen($tmpName)) {
+			copyFile($tmpName, $dropboxDir, $_FILES['submissionFile']['name'][$key]);
+		}
+	}
+	//store group number, so we know which file to run for the competition
+	file_put_contents($dropboxDir.'bot.txt', basename($_POST['SBotName'], ".java"));
+	
+}
 /**
  * Checks whether is submission is in time for the deadline
  * 
@@ -69,12 +89,13 @@ function validateFiles($submission) {
 	if (is_dir($uploadDir)) {
 		shell_exec("rm ".$uploadDir."*");
 	}
-	foreach ($_FILES['sanityCheckFile']['tmp_name'] AS $key => $filename) {
+	
+	foreach ($_FILES[($submission? 'submission': 'sanityCheck').'File']['tmp_name'] AS $key => $filename) {
 		if (strlen($filename)) {
 			//check valid filename (need to have numerical postfix!)
-			$errors = array_merge($errors, validateFilename($_FILES['sanityCheckFile']['name'][$key]));
+			$errors = array_merge($errors, validateFilename($_FILES[($submission? 'submission': 'sanityCheck').'File']['name'][$key]));
 			
-			$toFilename = ($submission? $_FILES['submissionFile']['name'][$key]: $_FILES['sanityCheckFile']['name'][$key]);
+			$toFilename = $_FILES[($submission? 'submission': 'sanityCheck').'File']['name'][$key];
 			$newFilename = copyFile($filename, $uploadDir, $toFilename);
 		}
 	}
@@ -238,7 +259,14 @@ function getBackupDir() {
  * @return boolean
  */
 function validFormFields() {
-	if (count($_FILES['submissionFile']['name']) > 0 /*&& (int)$_POST['week'] > 0*/ && count($_POST['group']) > 0) {
+	$someFileSubmitted = false;
+	foreach ($_FILES['submissionFile']['name'] as $key => $name ) {
+		if (strlen($name)) {
+			$someFileSubmitted = true;
+			break;
+		}
+	}
+	if ($someFileSubmitted && count($_POST['group']) > 0) {
 		return true;
 	} else {
 		return false;

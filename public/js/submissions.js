@@ -13,6 +13,21 @@ $('.remove_field').click(function() {
 	}
 
 });
+function addSubmissionInput() {
+	var controlGroup = $('#SControlGroup');
+	var clone = controlGroup.clone(true);
+	clone.removeAttr('id');
+	clone.find('#submissionFile').val('');
+	$('#SButtons').before(clone);
+};
+
+$('.remove_field').click(function() {
+
+	if ($('.input_holder input:last-child').attr('id') != 'input_clone') {
+		$('.input_holder input:last-child').remove();
+	}
+
+});
 
 function validateSubmissionInput() {
 	var valid = true;
@@ -26,12 +41,38 @@ function validateSubmissionInput() {
 					.after(
 							'<span class="label label-important" style="margin-left: 8px;">Please specify your group</span>');
 		}
+	} else {
+		anyFileSubmitted = false;
+		fileForBotFound = false;
+		//check all submitted files
+		$("input:file[name='submissionFile[]']").each(function(){
+			if ($(this).val() != null && $(this).val().length > 0) {
+				anyFileSubmitted = true;
+			}
+			if (valid && ($("#SBotName").val() == getFilename($(this).val()) || $("#SBotName").val() + ".java" == getFilename($(this).val()))) {
+				fileForBotFound = true;
+			}
+			validationResult = validFilename($(this));
+			if (validationResult != -1) {
+				valid = false;
+				addFilenameError($(this), validationResult);
+			}
+		});
+		if (!anyFileSubmitted) {
+			addFilenameError($("#submissionFile"), "You forgot to upload the java files");
+			valid = false;
+		} else if (!fileForBotFound) {
+			valid = false;
+			var div = $("#SBotName").parents("div.control-group");
+			div.addClass("error");
+			if ($("#SBotName").siblings().size() == 0) {
+				$("#SBotName")
+						.after(
+								'<span class="label label-important" style="margin-left: 8px;">The name you specified does not correspond with any of the files you uploaded..</span>');
+			}
+		}
 	}
-	//uploaded file needs to have .java extension
-	if (!validFilename("submissionFile")) {
-		valid = false;
-		addFilenameError("submissionFile");
-	}
+	console.log(valid);
 	return valid;
 }
 
@@ -107,12 +148,21 @@ function validFilename(element) {
 		
 		//check postfix
 		var basename = getBasename(filename);
-		console.log(basename.match(/^.*\d+/));
 		if (!basename.match(/^.*\d+/)) {
 			return "Append your group number to the file name, e.g. RandomBot14.java";
 		}
+		if (element.attr('name') == "submissionFile[]") {
+			//we need the exact number as the group input field
+			if (!endsWith(basename, $("#group").val())) {
+				return "Append the proper group number (i.e. " + $("#group").val() + ") to the file name, or change your group number above to the correct value";
+			}
+		}
+		
 	}
 	return -1;
+}
+function endsWith(str, suffix) {
+    return str.indexOf(suffix, str.length - suffix.length) !== -1;
 }
 function getExtension(filePath) {
 	var re = /(?:\.([^.]+))?$/;

@@ -9,7 +9,7 @@
 
 <div class="tabbable tabs-left">
   <ul class="nav nav-tabs">
-    <!--<li class=""><a href="#submission" data-toggle="tab">Submit your bot</a></li>-->
+    <li class=""><a href="#submission" data-toggle="tab">Submit your bot</a></li>
     <li class=""><a href="#sanityCheck" data-toggle="tab">Sanity Check your bot!</a></li>
   </ul>
   <div class="tab-content">
@@ -17,13 +17,19 @@
       
 	<form class="navbar-form well form-horizontal" onSubmit="return validateSubmissionInput();" action="index.php" method="post" enctype="multipart/form-data">
 		<fieldset>
-		<input type="hidden" name="performSubmission" value="1" />
+		<div class="control-group">
+			<div class="controls">
+				<p>Only upload the .java file of your bot, and if applicable, other .java files. Do not submit the Planet.java and PlanetWars.java files. Did you make changes to these files? Then get these in a different java class, and upload again</p>
+				<a href="#" class="btn btn-success btn-mini" onclick="addSubmissionInput();"><i class="icon-white icon-plus"></i> Add another file</a>
+				<input type="hidden" name="performSubmission" value="1" />
+			</div>
+		</div>
 		<div class="control-group">  
             <label class="control-label" for="group">Group</label> 
             <div class="controls">    
             <select onChange="onGroupChange();" id="group" name="group">
 				<option value=""></option>
-				{for $group=1 to 30}
+				{for $group=1 to 40}
 					<option value="{$group}">{$group}</option>
 				{/for}
 			</select>
@@ -36,25 +42,17 @@
 				<input type="text" onKeyUp="onBotNameChange($(this));" name="SBotName" id="SBotName">
 			</div>
 		</div>
-		<!--<div class="control-group">  
-			 <label class="control-label" for="week">Week</label> 
-			 <div class="controls">   
-			<select onChange="onWeekChange();" id="week" name="week">
-				<option value=""></option>
-				{for $week=1 to 4}
-					<option value="{$week}">{$week}</option>
-				{/for}
-			</select>
-			</div>
-		</div>-->
-		<div class="control-group">  
+		<div class="control-group" id="SControlGroup">  
 			 <label class="control-label" for="file">File</label> 
 			 <div class="controls">
-			 	<input onChange='onFileChange("submissionFile");' type="file" name="submissionFile" id="submissionFile">
-			 	<span class="help-block">Only submit the .java file of your bot</span>
+			 	<input onChange='onFileChange($(this));' type="file" name="submissionFile[]" id="submissionFile">
 			 </div>
 		</div>
-		<input class="btn btn-primary" type="submit" name="submit" value="Submit">
+		<div class="control-group" id="SButtons">  
+			<div class="controls"> 
+				<input class="btn btn-primary" type="submit" name="submit" value="Submit">
+			</div>
+		</div>
 		</fieldset>
 	</form>
     </div>
