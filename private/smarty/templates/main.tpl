@@ -19,7 +19,7 @@
 		<fieldset>
 		<div class="control-group">
 			<div class="controls">
-				<p>Only upload the .java file of your bot, and if applicable, other .java files. Do not submit the Planet.java and PlanetWars.java files. Did you make changes to these files? Then get these in a different java class, and upload again</p>
+				<p>Only upload the [java|py] file of your bot, and if applicable, other [java|py] files. Do not submit the Planet.[java|py] and PlanetWars.[java|py] files. Did you make changes to these files? Then get these in a different java class, and upload again</p>
 				<a href="#" class="btn btn-success btn-mini" onclick="addSubmissionInput();"><i class="icon-white icon-plus"></i> Add another file</a>
 				<input type="hidden" name="performSubmission" value="1" />
 			</div>
@@ -36,7 +36,7 @@
 			</div>
          </div>
          <div class="control-group">
-			<label class="control-label" for="SBotName">Bot Name (i.e. name of the main java file)</label>
+			<label class="control-label" for="SBotName">Bot Name (i.e. name of the main [java|py] file)</label>
 			
 			<div class="controls">
 				<input type="text" onKeyUp="onBotNameChange($(this));" name="SBotName" id="SBotName">
@@ -69,13 +69,13 @@
 		<fieldset>
 		<div class="control-group">
 			<div class="controls">
-				<p>Only upload the .java file of your bot, and if applicable, other .java files. Do not submit the Planet.java and PlanetWars.java files. Did you make changes to these files? Then get these in a different java class, and upload again</p>
+				<p>Only upload the .[java|py] file of your bot, and if applicable, other .[java|py] files. Do not submit the Planet.[java|py] and PlanetWars.[java|py] files. Did you make changes to these files? Then get these in a different java class, and upload again</p>
 				<a href="#" class="btn btn-success btn-mini" onclick="addSanityCheckInput();"><i class="icon-white icon-plus"></i> Add another file</a>
 				<input type="hidden" name="performSanityCheck" value="1" />
 			</div>
 		</div>
 		<div class="control-group">
-			<label class="control-label" for="SCBotName">Bot Name (i.e. name of the main java file)</label>
+			<label class="control-label" for="SCBotName">Bot Name (i.e. name of the main [java|py] file)</label>
 			
 			<div class="controls">
 				<input type="text" onKeyUp="onBotNameChange($(this));" name="SCBotName" id="SCBotName">
@@ -85,7 +85,7 @@
 			 <label class="control-label" for="file">File</label> 
 			 <div class="controls">
 			 	<input onChange='onFileChange($(this));' type="file" name="sanityCheckFile[]" id="sanityCheckFile">
-			 	<!--<span class="help-block">Only submit the .java file of your bot</span>-->
+			 	<!--<span class="help-block">Only submit the .[java|py] file of your bot</span>-->
 			 </div>
 		</div>
 		<div class="control-group" id="SCButtons">  

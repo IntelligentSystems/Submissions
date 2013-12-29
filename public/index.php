@@ -1,6 +1,7 @@
 <?php
 error_reporting(E_ERROR | E_WARNING);
 $privDir = "/home/lrd900/code/is_submissions/private/";
+//$privDir = "/home/lrd900/code/submissions/private/";
 if (!file_exists(getPath('lib/Smarty-3.1.8/libs/Smarty.class.php'))) {
 	echo "wanted to include file, but couldnt find it. Is the variable used in locating the private directory properly set??\n";
 	exit;
@@ -12,7 +13,12 @@ ini_set('display_errors',1);
 // error_reporting(E_ALL);
 error_reporting(E_ALL ^ E_NOTICE);
 $config = parse_ini_file(getPath("config.ini"), true);
+
+doSubmissionStartup();
+
+
 if ($_POST['performSanityCheck'] && count($_FILES['sanityCheckFile']['name']) > 0) {
+	
 	$errors = validateFiles(false);
 	drawSanityCheckResult($errors);
 } elseif ($_POST['performSubmission'] && validFormFields()) {
@@ -75,13 +81,23 @@ function checkDeadline() {
 	return $errors;
 }
 
+function doSubmissionStartup() {
+	global $config;
+	
+	//if we don't have compile planetwars engine yet, compile them!
+	if (count(glob(getPath($config['paths']['pwBotDir'])."*.class")) == 0) {
+		echo shell_exec("javac ".getPath($config['paths']['pwBotDir'])."*.java");
+	} else {
+		//echo "no need to compile\n";
+	}
+}
+
 /**
  * performs all required checks to validate file. 
  * Checks whether we can compile the file, and whether it runs in PlanetWars
  * @param unknown $filename
  */
 function validateFiles($submission) {
-	$_FILES['sanityCheckFile']['tmp_name'];
 	$errors = array();
 	
 	//get  upload dir and clean it
@@ -99,7 +115,8 @@ function validateFiles($submission) {
 			$newFilename = copyFile($filename, $uploadDir, $toFilename);
 		}
 	}
-	if (count($errors) === 0) {
+	addPwFilesToDir($uploadDir);
+	if (count($errors) === 0 && isJava()) {
 		$errors = array_merge($errors, testCompilation($uploadDir));
 	}
 	//check whether code runs in playgame
@@ -113,10 +130,10 @@ function validateFilename($filename) {
 	$errors = array();
 	$filearray = explode('.', $filename);
 	$extension = end($filearray);
-	if ($extension !== "java") {
+	if ($extension !== "java" && $extension !== "py") {
 		$errors[] = "Invalid file extension for file " . basename($filename) . ". Should be a .java file";
-	} else if (!preg_match("/^.*\d+/", basename($filename, ".java"))) {
-		$errors[] = "Add your group number to the end of your files, e.g. RandomBot14.java. Current filename: " . $filename;
+	} else if (!preg_match("/^.*\d+/", basename($filename, ".java")) && !preg_match("/^.*\d+/", basename($filename, ".py"))) {
+		$errors[] = "Add your group number to the end of your files, e.g. RandomBot14.java or RandomBot14.py. Current filename: " . $filename;
 		
 	}
 	return $errors;
@@ -142,13 +159,19 @@ function testPlayGame($dir) {
 	$botName = getBotName();
 	if (!strlen($botName)) $errors[] = "Unable to find a matching java file for your bot name";
 	$cmd = "java -jar PlayGame.jar map.txt";
-	$cmd .= " \"java -Xmx" . $config['game']['maxMemSanity'] ."m ".$botName."\" \"java -Xmx" . $config['game']['maxMemSanity'] ."m ".$botName."\"";
+	$botCall = "";
+	if (isJava()) {
+		$botCall = " \"java -Xmx" . $config['game']['maxMemSanity'] ."m ".$botName."\" ";
+	} else {
+		$botCall = " \"python ".$botName.".py\" ";
+	}
+	$cmd .= $botCall . $botCall;
 	$cmd .= " parallel ".$config['game']['numTurns']." ".$config['game']['maxTurnTime']." 2>&1";
 	$result = shell_exec($cmd);
 	if (strpos($result, "Wins") === false && strpos($result, "Draw") === false) {
 		//Every game should have a winner or should be a draw. 
 		//The output doesnt contain the string indicating this, so something must have gone wrong
-		$errors[] = "Unable to run the bot. Are you sure <br>- the bot properly compiled?<br>Output of PlayGame.jar: <div class=\"well\">" . $result."</div>";
+		$errors[] = "Unable to run the bot. ".(isJava()?"Are you sure the bot properly compiled?" : "")."<br>Output of PlayGame.jar: <div class=\"well\">" . $result."</div>";
 	}
 	if (strpos($result, "you missed a turn!") !== false) {
 		$errors[] = "Your bot was too slow. The maximum time per turn is set to ".$config['game']['maxTurnTime']."ms. Try to make your bot more efficient.";
@@ -174,6 +197,11 @@ function getBotName() {
 	return $botName;
 }
 
+function addPwFilesToDir($dir) {
+	global $config;
+	shell_exec("cp ".getPath($config['paths']['pwBotDir'])."/* ".$dir);
+}
+
 /**
  *  Try compiling the java file
  *  
@@ -183,8 +211,7 @@ function getBotName() {
 function testCompilation($dir) {
 	$errors = array();
 	global $config;
-	//move compiled api to location of submitted file. otherwise file wont compile
-	shell_exec("cp ".getPath($config['paths']['pwBotDir'])."*.class ".$dir);
+	
 	//Change dir to dir of java file. 
 	//This way compilation sees other api classes, and file is saved in proper location
 	//backup current dir, so we can reset (chdir again) to original directory afterwards
@@ -321,4 +348,9 @@ function getPath($path) {
 		//relative: prepend location of private directory
 		return $privDir.$path;
 	}
+}
+function isJava() {
+	error_reporting(E_ERROR | E_WARNING);
+	$files = (count($_FILES['sanityCheckFile']['name'])? $_FILES['sanityCheckFile']['name'] : $_FILES['submissionFile']['name']);
+	return end(explode('.', reset($files))) == "java";
 }

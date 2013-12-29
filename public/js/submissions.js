@@ -49,7 +49,7 @@ function validateSubmissionInput() {
 			if ($(this).val() != null && $(this).val().length > 0) {
 				anyFileSubmitted = true;
 			}
-			if (valid && ($("#SBotName").val() == getFilename($(this).val()) || $("#SBotName").val() + ".java" == getFilename($(this).val()))) {
+			if (valid && ($("#SBotName").val() == getFilename($(this).val()) || $("#SBotName").val() + ".java" == getFilename($(this).val()) || $("#SBotName").val() + ".py" == getFilename($(this).val()))) {
 				fileForBotFound = true;
 			}
 			validationResult = validFilename($(this));
@@ -59,7 +59,7 @@ function validateSubmissionInput() {
 			}
 		});
 		if (!anyFileSubmitted) {
-			addFilenameError($("#submissionFile"), "You forgot to upload the java files");
+			addFilenameError($("#submissionFile"), "You forgot to upload the [java|py] files");
 			valid = false;
 		} else if (!fileForBotFound) {
 			valid = false;
@@ -97,7 +97,7 @@ function validateSanityCheckInput() {
 		if ($(this).val() != null && $(this).val().length > 0) {
 			anyFileSubmitted = true;
 		}
-		if (valid && ($("#SCBotName").val() == getFilename($(this).val()) || $("#SCBotName").val() + ".java" == getFilename($(this).val()))) {
+		if (valid && ($("#SCBotName").val() == getFilename($(this).val()) || $("#SCBotName").val() + ".java" == getFilename($(this).val())  || $("#SCBotName").val() + ".py" == getFilename($(this).val()))) {
 			fileForBotFound = true;
 		}
 		validationResult = validFilename($(this));
@@ -138,18 +138,19 @@ function addFilenameError(element, message) {
 
 function validFilename(element) {
 	if (element.val() != undefined && element.val().length > 0) {
-		if (getExtension(element.val()) != "java") {
-			return "Only upload a .java file";
+		var extension = getExtension(element.val());
+		if (extension != "java" && extension != "py") {
+			return "Only upload a .java or .py file";
 		}
 		var filename = getFilename(element.val());
-		if (filename == "Planet.java" || filename == "PlanetWars.java") {
-			return "Do not submit the Planet.java or PlanetWars.java files";
+		if (filename == "Planet.java" || filename == "PlanetWars.java" || filename == "PlanetWars.py" || filename == "Planet.py") {
+			return "Do not submit the Planet.[java|py] or PlanetWars.[java|py] files";
 		}
 		
 		//check postfix
 		var basename = getBasename(filename);
 		if (!basename.match(/^.*\d+/)) {
-			return "Append your group number to the file name, e.g. RandomBot14.java";
+			return "Append your group number to the file name, e.g. RandomBot14.java or RandomBot14.py";
 		}
 		if (element.attr('name') == "submissionFile[]") {
 			//we need the exact number as the group input field
