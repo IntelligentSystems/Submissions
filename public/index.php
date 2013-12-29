@@ -1,4 +1,5 @@
 <?php
+date_default_timezone_set("Europe/Amsterdam");
 error_reporting(E_ERROR | E_WARNING);
 $privDir = "/home/lrd900/code/is_submissions/private/";
 //$privDir = "/home/lrd900/code/submissions/private/";
@@ -11,7 +12,7 @@ if (!file_exists(getPath('lib/Smarty-3.1.8/libs/Smarty.class.php'))) {
 require(getPath('lib/Smarty-3.1.8/libs/Smarty.class.php'));
 ini_set('display_errors',1);
 // error_reporting(E_ALL);
-error_reporting(E_ALL ^ E_NOTICE);
+//error_reporting(E_ALL ^ E_NOTICE);
 $config = parse_ini_file(getPath("config.ini"), true);
 
 doSubmissionStartup();
@@ -248,7 +249,7 @@ function copyFile($fromFilename, $toDir, $toFilename) {
 		mkdir($toDir,0777, true);
 	}
 	$newFilename = $toDir."/".$toFilename;
-	
+	//echo $fromFilename . "-->" . $newFilename."\n";
 	copy($fromFilename, $newFilename);
 	return $newFilename;
 }
